@@ -1,36 +1,36 @@
 import React, { useState } from 'react';
 import { PRICING_PLANS } from '../data/mockData';
-import { Check, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, ShieldCheck, CreditCard, Building2, HelpCircle } from 'lucide-react';
 
 export default function PricingSection({ onNavigate }) {
   const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' | 'yearly'
 
   return (
-    <section id="pricing" className="py-20 md:py-28 bg-slate-50 border-b border-slate-200/80 scroll-mt-16">
+    <section id="pricing" className="py-20 md:py-28 bg-slate-50 border-b border-slate-200/80 scroll-mt-16 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-3">
-            Transparent Pricing
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider mb-3">
+            Pakistan Market Pricing (PKR)
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-950 tracking-tight leading-tight">
-            Simple, predictable plans. <br />
-            <span className="text-blue-600">No surprise transaction penalties.</span>
+            Transparent pricing in PKR. <br />
+            <span className="text-blue-600">Zero hidden transaction fees.</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-slate-600">
-            Start with our full-featured 14-day free trial. Upgrade or cancel anytime as your retail store or restaurant expands.
+            Fair, predictable subscription plans tailored for Pakistani businesses. Start with a full-featured 14-day free trial.
           </p>
 
-          {/* Billing Toggle */}
+          {/* Billing Cycle Toggle */}
           <div className="flex items-center justify-center gap-3 mt-8">
             <span className={`text-sm font-bold ${billingCycle === 'monthly' ? 'text-slate-900' : 'text-slate-500'}`}>
-              Monthly
+              Monthly Billing
             </span>
 
             <button
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative w-14 h-8 bg-slate-200 rounded-full p-1 transition-colors hover:bg-slate-300"
+              className="relative w-14 h-8 bg-slate-200 rounded-full p-1 transition-colors hover:bg-slate-300 focus:outline-none"
               aria-label="Toggle billing cycle"
             >
               <div className={`w-6 h-6 bg-blue-600 rounded-full shadow-md transform transition-transform ${
@@ -39,7 +39,7 @@ export default function PricingSection({ onNavigate }) {
             </button>
 
             <span className={`text-sm font-bold flex items-center gap-1.5 ${billingCycle === 'yearly' ? 'text-slate-900' : 'text-slate-500'}`}>
-              <span>Yearly</span>
+              <span>Annual Billing</span>
               <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 rounded-full">
                 Save 20%
               </span>
@@ -48,9 +48,10 @@ export default function PricingSection({ onNavigate }) {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch mb-14">
           {PRICING_PLANS.map((plan, idx) => {
             const price = billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly;
+            const periodText = billingCycle === 'yearly' ? plan.periodYearly : plan.periodMonthly;
 
             return (
               <div
@@ -62,16 +63,16 @@ export default function PricingSection({ onNavigate }) {
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Most Popular Choice</span>
+                    <span>Most Popular in Pakistan</span>
                   </div>
                 )}
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-xl font-extrabold text-slate-950">{plan.name}</h3>
-                    <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md">
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-md">
                       {plan.badge}
                     </span>
                   </div>
@@ -80,19 +81,21 @@ export default function PricingSection({ onNavigate }) {
                     {plan.description}
                   </p>
 
-                  <div className="flex items-baseline gap-1 mb-2">
+                  <div className="flex items-baseline gap-1.5 mb-2">
+                    <span className="text-xs font-extrabold text-slate-500">₨</span>
                     <span className="text-4xl sm:text-5xl font-black text-slate-950">
-                      ${price}
+                      {price}
                     </span>
                     <span className="text-xs text-slate-500 font-semibold">/ month</span>
                   </div>
-                  <div className="text-[11px] text-slate-400 font-medium mb-6">
-                    {plan.period}
+                  
+                  <div className="text-[11px] text-blue-600 font-medium mb-6">
+                    {periodText}
                   </div>
 
                   <div className="pt-6 border-t border-slate-100">
                     <div className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
-                      Included Modules & Capabilities:
+                      Included Capabilities:
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
                       {plan.features.map((f, i) => (
@@ -118,7 +121,7 @@ export default function PricingSection({ onNavigate }) {
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <p className="text-[11px] text-center text-slate-400 mt-2 font-medium">
-                    14-day free access • Instant branch verification
+                    14-day free access • No credit card required
                   </p>
                 </div>
               </div>
@@ -126,8 +129,28 @@ export default function PricingSection({ onNavigate }) {
           })}
         </div>
 
+        {/* Local Pakistan Payment Methods Banner */}
+        <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div className="space-y-1">
+            <div className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Pakistani Payment Methods Supported</span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Pay conveniently in PKR via direct Bank Transfer, Raast ID, JazzCash, Easypaisa, or Visa / Mastercard.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-slate-700">
+            <span className="px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">Raast ID</span>
+            <span className="px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">Bank Transfer</span>
+            <span className="px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">JazzCash</span>
+            <span className="px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">Easypaisa</span>
+            <span className="px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">Visa / MC</span>
+          </div>
+        </div>
+
       </div>
     </section>
   );
 }
-

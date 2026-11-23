@@ -5,11 +5,12 @@ import {
   CheckCircle2, 
   TrendingUp, 
   ShieldCheck, 
-  Sparkles,
-  Layers,
-  ShoppingBag,
-  Store,
-  ChevronRight
+  Sparkles, 
+  Layers, 
+  ShoppingBag, 
+  Store, 
+  ChevronRight,
+  UtensilsCrossed
 } from 'lucide-react';
 
 export default function Hero({ onNavigate, onOpenDemo }) {
@@ -31,7 +32,7 @@ export default function Hero({ onNavigate, onOpenDemo }) {
                onClick={() => onNavigate('signup')}>
             <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
             <span className="text-xs font-semibold text-blue-900">
-              ManageO 3.0 is live — Built for Retail, Beauty & Dining
+              ManageO 3.0 is live — Built for Pakistan Retail, Beauty & Dining
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-blue-600 transition-transform group-hover:translate-x-0.5" />
           </div>
@@ -116,7 +117,7 @@ export default function Hero({ onNavigate, onOpenDemo }) {
             {/* Dashboard Screenshot Preview with Interactive Overlay */}
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 group">
               <img 
-                src="/images/dashboard-real.jpg" 
+                src={`${import.meta.env.BASE_URL}images/dashboard-real.jpg`}
                 alt="ManageO Point of Sale Dashboard" 
                 className="w-full h-auto object-cover rounded-xl sm:rounded-2xl opacity-95 transition-transform duration-500 group-hover:scale-[1.01]"
               />
@@ -166,8 +167,11 @@ export default function Hero({ onNavigate, onOpenDemo }) {
               <ShoppingBag className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600">Shop & Retail</div>
-              <div className="text-xs text-slate-500">Multi-branch stock, barcodes & COGS</div>
+              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 flex items-center gap-2">
+                <span>Shop & Retail</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">Ready</span>
+              </div>
+              <div className="text-xs text-slate-500">Clothing, jewelry, grocery marts, Khata</div>
             </div>
           </div>
 
@@ -182,8 +186,11 @@ export default function Hero({ onNavigate, onOpenDemo }) {
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600">Parlor & Beauty</div>
-              <div className="text-xs text-slate-500">Appointments, stylist commissions & tips</div>
+              <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 flex items-center gap-2">
+                <span>Beauty & Salon</span>
+                <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.2 rounded">Ready</span>
+              </div>
+              <div className="text-xs text-slate-500">Appointments, stylist commissions & bridal</div>
             </div>
           </div>
 
@@ -192,14 +199,17 @@ export default function Hero({ onNavigate, onOpenDemo }) {
               const el = document.getElementById('industries');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group"
+            className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-400 transition-all cursor-pointer group"
           >
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-              <Store className="w-6 h-6" />
+            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-colors">
+              <UtensilsCrossed className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-600">Restaurant & Dining</div>
-              <div className="text-xs text-slate-500">Table map, KDS orders & split billing</div>
+              <div className="text-sm font-bold text-slate-900 group-hover:text-amber-600 flex items-center gap-2">
+                <span>Restaurant & Hotel</span>
+                <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">Beta</span>
+              </div>
+              <div className="text-xs text-slate-500">Table map, KOT tickets & hotel rooms</div>
             </div>
           </div>
         </div>
