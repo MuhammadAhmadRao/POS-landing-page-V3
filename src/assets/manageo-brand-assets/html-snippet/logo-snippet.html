@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ManageO POS Logo Quick Start</title>
+  <!-- Optional: Include Google Font for identical browser typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      padding: 40px;
+      background: #F8FAFC;
+      color: #0F172A;
+    }
+    .card {
+      background: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .card-dark {
+      background: #0B132B;
+      border: 1px solid #1E293B;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      color: white;
+    }
+    code {
+      background: #F1F5F9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    pre {
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 16px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ManageO POS — Integration Snippets</h1>
+  <p>Copy-paste examples for adding the official logo into your POS application.</p>
+
+  <!-- EXAMPLE 1: Light Background -->
+  <div class="card">
+    <h3>1. Light Background (Primary Brand Mark)</h3>
+    <div style="margin: 20px 0;">
+      <img src="../svg/manageo-logo-primary.svg" alt="ManageO POS" height="40">
+    </div>
+    <pre>&lt;!-- Standard HTML img tag --&gt;
+&lt;img src="/assets/brand/manageo-logo-primary.svg" alt="ManageO POS" height="40" /&gt;</pre>
+  </div>
+
+  <!-- EXAMPLE 2: Dark Background -->
+  <div class="card-dark">
+    <h3>2. Dark Background (Sidebar / Header / Terminal)</h3>
+    <div style="margin: 20px 0;">
+      <img src="../svg/manageo-logo-dark.svg" alt="ManageO POS" height="40">
+    </div>
+    <pre>&lt;!-- Dark mode image --&gt;
+&lt;img src="/assets/brand/manageo-logo-dark.svg" alt="ManageO POS" height="40" /&gt;</pre>
+  </div>
+
+  <!-- EXAMPLE 3: Standalone Cart Icon -->
+  <div class="card">
+    <h3>3. Standalone Speed Cart Symbol</h3>
+    <div style="margin: 20px 0;">
+      <img src="../svg/manageo-symbol-primary.svg" alt="ManageO Symbol" height="36">
+    </div>
+    <pre>&lt;!-- Cart Symbol only --&gt;
+&lt;img src="/assets/brand/manageo-symbol-primary.svg" alt="ManageO" height="36" /&gt;</pre>
+  </div>
+
+  <!-- EXAMPLE 4: Responsive Picture Element -->
+  <div class="card">
+    <h3>4. Automatic Dark / Light Mode Switching</h3>
+    <p>Using CSS media queries with HTML <code>&lt;picture&gt;</code>:</p>
+    <pre>&lt;picture&gt;
+  &lt;source srcset="/assets/brand/manageo-logo-dark.svg" media="(prefers-color-scheme: dark)" /&gt;
+  &lt;img src="/assets/brand/manageo-logo-primary.svg" alt="ManageO POS" height="40" /&gt;
+&lt;/picture&gt;</pre>
+  </div>
+
+</body>
+</html>

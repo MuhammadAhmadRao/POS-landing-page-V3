@@ -58,7 +58,7 @@ export default function Navbar({ onNavigate, currentPage = 'landing' }) {
             onClick={() => onNavigate('landing')} 
             className="cursor-pointer transition-opacity hover:opacity-95"
           >
-            <Logo size="md" withTagline={false} />
+            <Logo size="md" showBadge={true} />
           </div>
 
           {/* Desktop Nav Links */}

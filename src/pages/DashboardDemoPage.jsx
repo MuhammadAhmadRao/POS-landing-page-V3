@@ -103,7 +103,7 @@ export default function DashboardDemoPage({ onNavigate }) {
           <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80">
             {!sidebarCollapsed && (
               <div onClick={() => onNavigate('landing')} className="cursor-pointer">
-                <Logo theme="light" size="sm" withTagline={false} />
+                <Logo theme="light" size="sm" showBadge={true} />
               </div>
             )}
             <button 
