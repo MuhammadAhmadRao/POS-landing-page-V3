@@ -9,14 +9,33 @@ import { COMPANY_CONTACT } from '../data/mockData';
 const ENV_GEMINI_API_KEY = (import.meta.env?.VITE_GEMINI_API_KEY || '').trim();
 
 export const PROJECT_DEFAULT_GEMINI_KEY = ENV_GEMINI_API_KEY;
+export const MAX_STORED_MESSAGES = 50;
+export const MAX_API_CONTEXT_MESSAGES = 20;
+
+const GEMINI_MODELS = [
+  'gemini-flash-lite-latest',
+  'gemini-3.5-flash-lite',
+  'gemini-3.8-flash',
+  'gemini-flash-latest'
+];
 
 /**
  * Resolve the active Gemini API key from window override, localStorage, or fixed project env.
+ * Automatically clears stale browser-saved keys when the project's fixed env key changes.
  */
 export function getConfiguredGeminiApiKey() {
   if (typeof window !== 'undefined') {
     const windowKey = (window.__GEMINI_KEY__ || '').trim();
     if (windowKey) return windowKey;
+
+    if (ENV_GEMINI_API_KEY) {
+      const fingerprint = ENV_GEMINI_API_KEY.slice(0, 16);
+      const prevFingerprint = localStorage.getItem('manageo_gemini_env_fp');
+      if (prevFingerprint !== fingerprint) {
+        localStorage.removeItem('manageo_gemini_api_key');
+        localStorage.setItem('manageo_gemini_env_fp', fingerprint);
+      }
+    }
 
     const storedKey = (localStorage.getItem('manageo_gemini_api_key') || '').trim();
     if (storedKey) return storedKey;
@@ -29,41 +48,41 @@ export const DEFAULT_GEMINI_API_KEY = getConfiguredGeminiApiKey();
 
 // Tailored System Instruction for ManageO POS
 export const SYSTEM_INSTRUCTION = `
-You are the official AI Support Concierge for ManageO POS (Pakistan).
-Your name is "ManageO Assistant".
+You are "ManageO Assistant", the concise customer support assistant for ManageO POS (Pakistan).
 
-CORE RULES & SCOPE RESTRICTIONS:
-1. YOU ONLY ANSWER QUESTIONS RELATED TO MANAGEO POS AND POINT-OF-SALE OPERATIONS.
-   - Topics allowed: ManageO POS features, modules, Pakistan market pricing in PKR, offline billing, customer Khata / Udhar, WhatsApp digital receipts, hardware independence, thermal printers, barcode scanners, branches, and account signup.
-2. STRICT REFUSAL OF UNRELATED QUERIES:
-   - If the user asks about anything unrelated to POS, business operations, or ManageO (such as writing general code, recipes, weather, politics, jokes, gaming, homework, etc.), you MUST politely decline:
-     "I am the dedicated ManageO POS assistant. I can only assist with questions regarding our POS system, features, pricing in Pakistan, and business modules. How can I help with your store, salon, or restaurant today?"
-3. ESCALATION TO REAL AGENT:
-   - If a customer asks a question you do not know, asks for custom discounts, requests a live sales representative, or needs urgent technical help, prompt them to contact our human team:
-     "For this specific request or personalized consultation, please connect with our real human representative! You can click the 'Real Person (WhatsApp)' tab above, or chat with us on WhatsApp at ${COMPANY_CONTACT.whatsapp} (${COMPANY_CONTACT.phone})."
-4. TONE & IDENTITY:
-   - Professional, warm, welcoming, and localized for Pakistan (you can greet with "Assalam-o-Alaikum").
-   - Format responses concisely with clear bullet points.
+STRICT GROUNDING & ANTI-HALLUCINATION RULES:
+1. ONLY use facts explicitly written in the KNOWLEDGE BASE below or stated by the user in this chat.
+2. NEVER invent or guess features, integrations, prices, discounts, release dates, links, or policies not in the KNOWLEDGE BASE.
+3. If the user asks about something not covered in the KNOWLEDGE BASE (e.g. unsupported integrations, custom pricing, specific hardware model checks), say briefly that you don't have that exact detail and direct them to the "Real Person (WhatsApp)" tab (${COMPANY_CONTACT.whatsapp} / ${COMPANY_CONTACT.phone}).
+4. SCOPE REFUSAL: If asked about anything unrelated to ManageO POS or retail/salon/restaurant POS operations (coding, weather, recipes, jokes, homework, general trivia), reply with:
+   "I only assist with ManageO POS features, pricing in PKR, and business setup. How can I help with your store, salon, or restaurant?"
+
+CONVERSATION STYLE & LENGTH RULES (CRITICAL):
+5. NO REPEATED GREETINGS: Never start replies with "Assalam-o-Alaikum", "Hello", or "Welcome"—the chat already greeted the user. Only greet back if the user's message is solely a greeting (e.g., "hi", "salam").
+6. BE BRIEF & DIRECT:
+   - Simple or specific questions: answer in 1–3 short sentences (under 45 words).
+   - Multi-part or overview questions: use at most 3–4 short bullet points (under 85 words total).
+   - Answer ONLY what was asked—do not dump unrelated modules or full pricing tables unless asked.
+   - Do not end replies with repetitive filler like "How can I assist you today?".
+   - Use clean formatting: put each bullet on its own line starting with "• " and keep spacing readable.
+7. REMEMBER CONTEXT: Use details the user shared earlier in the conversation (such as their business type, city, branch count, or budget) instead of asking again.
 
 KNOWLEDGE BASE:
 - Modules:
-  1. Shop & Retail (Ready to Ship): Clothing boutiques, jewelry stores, grocery marts, cosmetics, electronics. Barcode generation & rapid scanning, customer Khata (credit ledger), WhatsApp invoices, real-time multi-branch stock sync, FBR POS readiness.
-  2. Beauty & Salon (Ready to Ship): Parlors, hair salons, barbershops, spas, bridal makeup studios. Appointment booking calendar, chair management, stylist commissions (15-20%), bridal packages, client formula histories.
-  3. Restaurant & Hotel (Under Active Development - Beta Q1 2027): Cafes, dine-in, fast food, boutique hotels. Visual table floor plans, Kitchen Order Tickets (KOT) digital routing, delivery rider tracking, hotel room billing.
-- Zero Hardware Traps (BYOD):
-  - Pure web and cloud POS. No expensive proprietary machines needed.
-  - Runs in browser on Windows PC, Mac, iPad, Android tablets, or smartphones.
-  - 100% Offline Mode: When internet or electricity drops in Pakistan, billing, scanning, and printing keep working. Data auto-syncs when reconnected.
-  - Connects to any standard 58mm/80mm thermal receipt printer (USB, Bluetooth, LAN) and standard barcode scanners.
-- Pricing in PKR:
-  - Starter Shop: ₨ 4,500/month (or ₨ 3,600/mo billed annually • Save 20%). 1 counter, unlimited products, offline billing, WhatsApp receipts.
-  - Growth (Multi-Counter - Most Popular): ₨ 9,500/month (or ₨ 7,600/mo billed annually). Up to 3 branches, stock sync, stylist commissions or KOT, FBR tax ready.
-  - Enterprise: ₨ 18,500/month (or ₨ 14,800/mo billed annually). Unlimited branches, central warehouse, dedicated Pakistani account manager.
-  - All plans include a 14-day free trial with no credit card required.
-- Local Payment Methods: Bank Transfer, Raast ID, JazzCash, Easypaisa, Visa, Mastercard.
-- Contact Details:
-  - WhatsApp: ${COMPANY_CONTACT.whatsapp}
-  - Phone Helpline: ${COMPANY_CONTACT.phone}
+  1. Shop & Retail (Live / Ready to Ship): Clothing boutiques, jewelry, grocery marts, cosmetics, electronics. Barcode generation & scanning, Customer Khata / Udhar ledger, WhatsApp digital PDF receipts, multi-branch stock sync, FBR POS sales tax readiness.
+  2. Beauty & Salon (Live / Ready to Ship): Beauty parlors, hair salons, barbershops, spas, bridal studios. Visual appointment calendar, chair/room management, stylist commissions (e.g. 15–20%) & tips, bridal/service packages with advance deposits, client formula logs.
+  3. Restaurant & Hotel (Under Development — Beta Q1 2027): Dine-in, cafes, fast food, boutique hotels. Table floor plans, Kitchen Order Tickets (KOT), delivery rider tracking, hotel room billing. Early-access waitlist open.
+- Hardware & Offline (BYOD):
+  - Web/cloud POS; runs in browser on existing Windows PC, Mac, iPad, Android tablet, or smartphone (no proprietary hardware needed).
+  - 100% Offline Mode: Billing, barcode scanning, and receipt printing continue during internet or power outages; auto-syncs when online.
+  - Supports standard 58mm/80mm thermal receipt printers (USB, Bluetooth, LAN) and USB/wireless barcode scanners.
+- Pricing in PKR (14-day free trial, no credit card required, zero hidden transaction fees):
+  - Starter Shop: ₨ 4,500/mo (₨ 3,600/mo billed annually — Save 20%). 1 counter/store, unlimited products, offline mode, Khata, WhatsApp receipts.
+  - Growth & Multi-Counter (Most Popular): ₨ 9,500/mo (₨ 7,600/mo billed annually). Up to 3 branches/counters, real-time stock sync, stylist commissions & salon calendar, FBR POS tax readiness, role permissions.
+  - Enterprise Chain: ₨ 18,500/mo (₨ 14,800/mo billed annually). Unlimited branches & central warehouse, ERP/accounting export (Excel, SAP, QuickBooks), early Restaurant & Hotel access, dedicated Pakistani account manager.
+- Payments Accepted: Bank Transfer, Raast ID, JazzCash, Easypaisa, Visa, Mastercard.
+- Contact & Offices:
+  - WhatsApp: ${COMPANY_CONTACT.whatsapp} | Helpline: ${COMPANY_CONTACT.phone} (Mon–Sat, 9 AM–9 PM PKT; 24/7 WhatsApp for paid subscribers)
   - Email: ${COMPANY_CONTACT.email}
   - Offices: Islamabad (Blue Area), Lahore (Gulberg III), Karachi (Clifton Block 4).
 `;
@@ -160,6 +179,11 @@ const TOPIC_HANDLERS = [
     keywords: ['contact', 'office', 'offices', 'location', 'locations', 'address', 'addresses', 'islamabad', 'lahore', 'karachi', 'phone', 'email', 'timing', 'hours', 'support'],
     response: () =>
       `You can reach ManageO Pakistan anytime:\n• WhatsApp: ${COMPANY_CONTACT.whatsapp}\n• Helpline: ${COMPANY_CONTACT.phone} (Mon–Sat, 9:00 AM – 9:00 PM PKT; 24/7 WhatsApp for paid subscribers)\n• Email: ${COMPANY_CONTACT.email}\n• Offices: Islamabad (Blue Area), Lahore (Gulberg III), Karachi (Clifton Block 4).`
+  },
+  {
+    keywords: ['about', 'overview', 'this project', 'manageo', 'features', 'modules', 'tell me more', 'explain', 'what is'],
+    response: () =>
+      "ManageO POS is an all-in-one Cloud & 100% Offline Point-of-Sale system built for Pakistani businesses:\n• Shop & Retail (Live): Barcode billing, Customer Khata/Udhar, WhatsApp PDF receipts, multi-branch stock sync, FBR readiness\n• Beauty & Salon (Live): Visual appointment calendar, stylist commissions, bridal packages, client formula logs\n• Restaurant & Hotel (Beta Q1 2027): Table floor plans, KOT kitchen routing, rider tracking\n• Runs on any existing PC, Mac, iPad, or phone with standard 58mm/80mm thermal printers."
   }
 ];
 
@@ -207,7 +231,7 @@ export function getLocalFallbackResponse(userQuery, chatHistory = []) {
  */
 function buildGeminiContents(chatHistory, userQuery) {
   const rawTurns = (chatHistory || [])
-    .slice(-10)
+    .slice(-MAX_API_CONTEXT_MESSAGES)
     .filter((msg) => msg && typeof msg.text === 'string' && msg.text.trim())
     .map((msg) => ({
       role: msg.sender === 'user' ? 'user' : 'model',
@@ -279,56 +303,62 @@ export async function sendGeminiChatMessage(userQuery, chatHistory = [], customA
     },
     contents: buildGeminiContents(chatHistory, userQuery),
     generationConfig: {
-      temperature: 0.25,
-      maxOutputTokens: 600,
-      topP: 0.95
+      temperature: 0.15,
+      maxOutputTokens: 280,
+      topP: 0.9
     }
   };
 
-  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  let lastError = null;
 
-  try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify(payload)
-    });
+  for (const model of GEMINI_MODELS) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-    const data = await response.json();
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
+        body: JSON.stringify(payload)
+      });
 
-    if (!response.ok || data.error) {
-      const apiError = formatGeminiApiError(response.status, data.error);
-      console.warn('Gemini API Notice:', data.error || response.statusText);
-      return {
-        text: getLocalFallbackResponse(userQuery, chatHistory),
-        source: 'local-guard',
-        apiError
-      };
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        lastError = formatGeminiApiError(response.status, data.error);
+        console.warn(`Gemini API Notice (${model}):`, data.error || response.statusText);
+        // Retry next model only for transient/model availability errors (404/429/500/503)
+        if ([404, 429, 500, 503].includes(response.status)) {
+          continue;
+        }
+        return {
+          text: getLocalFallbackResponse(userQuery, chatHistory),
+          source: 'local-guard',
+          apiError: lastError
+        };
+      }
+
+      const candidate = data.candidates?.[0];
+      const text = candidate?.content?.parts?.map((p) => p.text).filter(Boolean).join('\n');
+
+      if (text) {
+        return {
+          text: text.trim(),
+          source: 'gemini-live',
+          model
+        };
+      }
+    } catch (err) {
+      lastError = err.message;
+      console.warn(`Gemini fetch error (${model}), trying fallback:`, err);
     }
-
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.map((p) => p.text).filter(Boolean).join('\n');
-
-    if (text) {
-      return {
-        text: text.trim(),
-        source: 'gemini-live'
-      };
-    }
-
-    return {
-      text: getLocalFallbackResponse(userQuery, chatHistory),
-      source: 'local-guard'
-    };
-  } catch (err) {
-    console.warn('Gemini fetch error, using local POS guard:', err);
-    return {
-      text: getLocalFallbackResponse(userQuery, chatHistory),
-      source: 'local-guard',
-      apiError: err.message
-    };
   }
+
+  return {
+    text: getLocalFallbackResponse(userQuery, chatHistory),
+    source: 'local-guard',
+    ...(lastError ? { apiError: lastError } : {})
+  };
 }

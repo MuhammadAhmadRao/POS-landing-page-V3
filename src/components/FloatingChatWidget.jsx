@@ -3,7 +3,8 @@ import { COMPANY_CONTACT } from '../data/mockData';
 import { 
   sendGeminiChatMessage, 
   getConfiguredGeminiApiKey,
-  PROJECT_DEFAULT_GEMINI_KEY
+  PROJECT_DEFAULT_GEMINI_KEY,
+  MAX_STORED_MESSAGES
 } from '../services/geminiChatService';
 import { 
   MessageSquare, 
@@ -21,20 +22,105 @@ import {
   Key,
   Settings,
   HelpCircle,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
+
+const CHAT_HISTORY_STORAGE_KEY = 'manageo_chat_history_v1';
+
+const getInitialWelcomeMessage = () => ({
+  id: 1,
+  sender: 'ai',
+  text: "Assalam-o-Alaikum! Welcome to ManageO POS. I'm your Google Gemini-powered business assistant. How can I assist your retail store, salon, or restaurant in Pakistan today?",
+  time: 'Just now'
+});
+
+function loadPersistedMessages() {
+  if (typeof window === 'undefined') return [getInitialWelcomeMessage()];
+  try {
+    const raw = localStorage.getItem(CHAT_HISTORY_STORAGE_KEY);
+    if (!raw) return [getInitialWelcomeMessage()];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.slice(-MAX_STORED_MESSAGES);
+    }
+  } catch (err) {
+    console.warn('Could not restore chat history:', err);
+  }
+  return [getInitialWelcomeMessage()];
+}
+
+function formatMessageTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderInlineFormatting(line) {
+  // Parse **bold** and *italic* segments without leaving raw markdown asterisks
+  const tokens = line.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\s][^*]*\*)/g);
+  return tokens.map((token, idx) => {
+    if (
+      (token.startsWith('**') && token.endsWith('**')) ||
+      (token.startsWith('__') && token.endsWith('__'))
+    ) {
+      return (
+        <strong key={idx} className="font-semibold text-slate-950">
+          {token.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (token.startsWith('*') && token.endsWith('*') && token.length > 2) {
+      return (
+        <em key={idx} className="italic">
+          {token.slice(1, -1)}
+        </em>
+      );
+    }
+    return token.replace(/\*\*/g, '');
+  });
+}
+
+function renderFormattedMessage(text) {
+  if (!text) return null;
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-1.5">
+      {lines.map((rawLine, idx) => {
+        const line = rawLine.trim();
+        if (!line) {
+          return <div key={idx} className="h-1" />;
+        }
+
+        const bulletMatch = line.match(/^(?:[-*•])\s+(.*)$/);
+        if (bulletMatch) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-0.5">
+              <span className="text-blue-600 font-bold leading-relaxed shrink-0">•</span>
+              <span className="flex-1">{renderInlineFormatting(bulletMatch[1])}</span>
+            </div>
+          );
+        }
+
+        const numberedMatch = line.match(/^(\d+\.)\s+(.*)$/);
+        if (numberedMatch) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-0.5">
+              <span className="font-semibold text-slate-900 shrink-0">{numberedMatch[1]}</span>
+              <span className="flex-1">{renderInlineFormatting(numberedMatch[2])}</span>
+            </div>
+          );
+        }
+
+        return <div key={idx}>{renderInlineFormatting(line)}</div>;
+      })}
+    </div>
+  );
+}
 
 export default function FloatingChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('ai'); // 'ai' | 'agent'
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'ai',
-      text: "Assalam-o-Alaikum! Welcome to ManageO POS. I'm your Google Gemini-powered business assistant. How can I assist your retail store, salon, or restaurant in Pakistan today?",
-      time: 'Just now'
-    }
-  ]);
+  const [messages, setMessages] = useState(() => loadPersistedMessages());
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [customKey, setCustomKey] = useState(() => getConfiguredGeminiApiKey());
@@ -57,10 +143,31 @@ export default function FloatingChatWidget() {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          CHAT_HISTORY_STORAGE_KEY,
+          JSON.stringify(messages.slice(-MAX_STORED_MESSAGES))
+        );
+      } catch (err) {
+        console.warn('Could not persist chat history:', err);
+      }
+    }
+  }, [messages]);
+
+  useEffect(() => {
     if (isOpen) {
       scrollToBottom();
     }
   }, [messages, isOpen, isTyping]);
+
+  const handleClearChat = () => {
+    const initial = [getInitialWelcomeMessage()];
+    setMessages(initial);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
+    }
+  };
 
   const quickPrompts = [
     { label: "Does it work offline?", query: "Does ManageO work offline without internet?" },
@@ -78,15 +185,16 @@ export default function FloatingChatWidget() {
       id: Date.now(),
       sender: 'user',
       text: query,
-      time: 'Just now'
+      time: formatMessageTime()
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const historyBeforeSend = messages;
+    setMessages((prev) => [...prev, userMsg].slice(-MAX_STORED_MESSAGES));
     setInputValue('');
     setIsTyping(true);
 
     try {
-      const response = await sendGeminiChatMessage(query, messages, customKey);
+      const response = await sendGeminiChatMessage(query, historyBeforeSend, customKey);
       
       if (response.source === 'gemini-live') {
         setApiStatus('live');
@@ -101,11 +209,11 @@ export default function FloatingChatWidget() {
         sender: 'ai',
         text: response.text,
         source: response.source,
-        time: 'Just now'
+        time: formatMessageTime()
       };
 
       setIsTyping(false);
-      setMessages((prev) => [...prev, aiMsg]);
+      setMessages((prev) => [...prev, aiMsg].slice(-MAX_STORED_MESSAGES));
     } catch (err) {
       setIsTyping(false);
       setMessages((prev) => [
@@ -114,9 +222,9 @@ export default function FloatingChatWidget() {
           id: Date.now() + 1,
           sender: 'ai',
           text: "I am having trouble connecting right now. Please message our real agent directly on WhatsApp at " + COMPANY_CONTACT.whatsapp + "!",
-          time: 'Just now'
+          time: formatMessageTime()
         }
-      ]);
+      ].slice(-MAX_STORED_MESSAGES));
     }
   };
 
@@ -172,6 +280,13 @@ export default function FloatingChatWidget() {
             </div>
 
             <div className="flex items-center gap-1">
+              <button
+                onClick={handleClearChat}
+                className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                title="Clear Chat History"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className={`relative p-1.5 rounded-xl transition-colors ${showSettings ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
@@ -298,13 +413,13 @@ export default function FloatingChatWidget() {
                     className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl p-3 leading-relaxed whitespace-pre-line shadow-xs ${
+                      className={`max-w-[85%] rounded-2xl p-3 leading-relaxed shadow-xs ${
                         m.sender === 'user'
-                          ? 'bg-blue-600 text-white rounded-br-sm'
+                          ? 'bg-blue-600 text-white rounded-br-sm whitespace-pre-line'
                           : 'bg-white text-slate-800 border border-slate-200/80 rounded-bl-sm'
                       }`}
                     >
-                      {m.text}
+                      {m.sender === 'user' ? m.text : renderFormattedMessage(m.text)}
                     </div>
 
                     <div className="flex items-center gap-2 mt-1 px-1">
