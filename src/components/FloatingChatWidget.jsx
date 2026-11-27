@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { COMPANY_CONTACT } from '../data/mockData';
 import { 
   sendGeminiChatMessage, 
-  DEFAULT_GEMINI_API_KEY 
+  getConfiguredGeminiApiKey,
+  PROJECT_DEFAULT_GEMINI_KEY
 } from '../services/geminiChatService';
 import { 
   MessageSquare, 
@@ -36,12 +37,20 @@ export default function FloatingChatWidget() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [customKey, setCustomKey] = useState(() => {
-    return (typeof window !== 'undefined' && localStorage.getItem('manageo_gemini_api_key')) || DEFAULT_GEMINI_API_KEY || '';
-  });
+  const [customKey, setCustomKey] = useState(() => getConfiguredGeminiApiKey());
   const [showSettings, setShowSettings] = useState(false);
-  const [apiStatus, setApiStatus] = useState('configured'); // 'live' | 'configured'
+  const [apiStatus, setApiStatus] = useState(() => (getConfiguredGeminiApiKey() ? 'configured' : 'missing')); // 'live' | 'configured' | 'fallback' | 'missing'
+  const [lastApiError, setLastApiError] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const resetToProjectKey = () => {
+    setCustomKey(PROJECT_DEFAULT_GEMINI_KEY);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('manageo_gemini_api_key');
+    }
+    setApiStatus(PROJECT_DEFAULT_GEMINI_KEY ? 'configured' : 'missing');
+    setLastApiError(null);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -81,6 +90,10 @@ export default function FloatingChatWidget() {
       
       if (response.source === 'gemini-live') {
         setApiStatus('live');
+        setLastApiError(null);
+      } else if (response.apiError) {
+        setApiStatus('fallback');
+        setLastApiError(response.apiError);
       }
 
       const aiMsg = {
@@ -161,10 +174,13 @@ export default function FloatingChatWidget() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className={`p-1.5 rounded-xl transition-colors ${showSettings ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-                title="API Key Details"
+                className={`relative p-1.5 rounded-xl transition-colors ${showSettings ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                title={lastApiError ? `API Notice: ${lastApiError}` : 'API Key Details'}
               >
                 <Key className="w-4 h-4" />
+                {apiStatus === 'fallback' && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                )}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
@@ -184,24 +200,52 @@ export default function FloatingChatWidget() {
                   <span>Google AI Studio API Key</span>
                 </span>
                 <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">
-                  POS-Gemini-API
+                  {customKey && customKey === PROJECT_DEFAULT_GEMINI_KEY
+                    ? 'Fixed Project Key Active'
+                    : 'POS-Gemini-API'}
                 </span>
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <input
                   type="password"
                   value={customKey}
                   onChange={(e) => {
                     const val = e.target.value;
+                    const trimmed = val.trim();
+                    if (!trimmed && PROJECT_DEFAULT_GEMINI_KEY) {
+                      resetToProjectKey();
+                      return;
+                    }
                     setCustomKey(val);
                     if (typeof window !== 'undefined') {
-                      localStorage.setItem('manageo_gemini_api_key', val);
+                      if (trimmed) {
+                        localStorage.setItem('manageo_gemini_api_key', trimmed);
+                      } else {
+                        localStorage.removeItem('manageo_gemini_api_key');
+                      }
                     }
+                    setApiStatus(trimmed ? 'configured' : 'missing');
+                    setLastApiError(null);
                   }}
-                  placeholder="Enter Gemini API Key (e.g. AIzaSy...)"
+                  placeholder="Enter Gemini API Key (e.g. AIzaSy... or AQ....)"
                   className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-200 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
+                {PROJECT_DEFAULT_GEMINI_KEY && customKey !== PROJECT_DEFAULT_GEMINI_KEY && (
+                  <button
+                    type="button"
+                    onClick={resetToProjectKey}
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 underline"
+                  >
+                    Reset to fixed project API key
+                  </button>
+                )}
               </div>
+              {lastApiError && (
+                <div className="text-[11px] text-amber-200 bg-amber-950/60 border border-amber-700/60 p-2.5 rounded-xl flex items-start gap-2 leading-relaxed">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <span>{lastApiError}</span>
+                </div>
+              )}
               <div className="text-[11px] text-slate-400 leading-relaxed bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/80 space-y-1">
                 <div className="font-semibold text-slate-200 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
