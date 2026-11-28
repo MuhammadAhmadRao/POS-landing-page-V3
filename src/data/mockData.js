@@ -158,7 +158,7 @@ export const REAL_DASHBOARD_DATA = {
     "Branch 03 — Dolmen Mall Clifton (Karachi)",
     "Branch 04 — Gulberg Boulevard (Lahore)"
   ],
-  ownerName: "Asad Rao",
+  ownerName: "Demo User",
   role: "BUSINESS OWNER",
   period: "01/11/2026 to 23/11/2026",
   currency: "Rs.",

@@ -262,7 +262,7 @@ export default function DashboardDemoPage({ onNavigate }) {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg text-xs font-bold text-slate-800 border border-slate-200">
                 <Building className="w-3.5 h-3.5 text-blue-600" />
-                <span>LINSOL Account Verification</span>
+                <span>{REAL_DASHBOARD_DATA.storeName}</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </div>
 
@@ -301,11 +301,11 @@ export default function DashboardDemoPage({ onNavigate }) {
 
               <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-                  AR
+                  DU
                 </div>
                 <div className="text-left leading-tight hidden sm:block">
-                  <div className="text-xs font-bold text-slate-900">Asad Rao</div>
-                  <div className="text-[10px] font-bold text-blue-600 uppercase">BUSINESS OWNER</div>
+                  <div className="text-xs font-bold text-slate-900">{REAL_DASHBOARD_DATA.ownerName}</div>
+                  <div className="text-[10px] font-bold text-blue-600 uppercase">{REAL_DASHBOARD_DATA.role}</div>
                 </div>
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function DashboardDemoPage({ onNavigate }) {
             <div>
               <h1 className="text-2xl font-black text-slate-950">Dashboard</h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                Welcome back, Asad Rao! Here's what's happening with your business today.
+                Welcome back, {REAL_DASHBOARD_DATA.ownerName}! Here's what's happening with your business today.
               </p>
             </div>
 

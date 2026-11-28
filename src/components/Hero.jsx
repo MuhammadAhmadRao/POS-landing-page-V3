@@ -1,4 +1,5 @@
 import React from 'react';
+import heroDashboardImg from '../assets/PHOTO-2026-11-23-15-37-29.jpg';
 import { 
   ArrowRight, 
   Play, 
@@ -117,13 +118,13 @@ export default function Hero({ onNavigate, onOpenDemo }) {
             {/* Dashboard Screenshot Preview with Interactive Overlay */}
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 group">
               <img 
-                src={`${import.meta.env.BASE_URL}images/dashboard-real.jpg`}
+                src={heroDashboardImg}
                 alt="ManageO Point of Sale Dashboard" 
-                className="w-full h-auto object-cover rounded-xl sm:rounded-2xl opacity-95 transition-transform duration-500 group-hover:scale-[1.01]"
+                className="w-full h-auto object-cover rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-[1.01]"
               />
 
               {/* Subtle Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent pointer-events-none" />
 
               {/* Floating Pill Highlights */}
               <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/90 backdrop-blur-md p-3 sm:p-4 rounded-xl border border-slate-700/80 text-white shadow-xl">
@@ -134,9 +135,9 @@ export default function Hero({ onNavigate, onOpenDemo }) {
                   <div>
                     <div className="text-xs text-slate-400 font-medium">Real-Time Store Performance</div>
                     <div className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                      <span>Rs. 3,348,347.00 Net Sales</span>
+                      <span>Multi-Branch Cloud & Offline POS</span>
                       <span className="text-xs text-emerald-400 font-semibold bg-emerald-900/50 px-2 py-0.5 rounded-md">
-                        +17.19% Gross Margin
+                        +25.27% Gross Margin
                       </span>
                     </div>
                   </div>

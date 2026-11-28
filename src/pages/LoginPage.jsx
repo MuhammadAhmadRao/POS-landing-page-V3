@@ -119,11 +119,11 @@ export default function LoginPage({ onNavigate }) {
                 
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
-                    onClick={() => handleQuickDemo('Retail', 'asad.rao@linsol.com')}
+                    onClick={() => handleQuickDemo('Retail', 'demo@manageo-pos.com')}
                     className="py-1.5 px-2 bg-white hover:bg-blue-600 hover:text-white rounded-xl text-[11px] font-bold text-slate-800 border border-slate-200 transition-colors flex items-center gap-1.5 group text-left shadow-2xs"
                   >
                     <ShoppingBag className="w-3 h-3 text-blue-600 group-hover:text-white shrink-0" />
-                    <span className="truncate">Retail (Asad Rao)</span>
+                    <span className="truncate">Retail (Demo User)</span>
                   </button>
 
                   <button
