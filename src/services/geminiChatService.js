@@ -13,10 +13,10 @@ export const MAX_STORED_MESSAGES = 50;
 export const MAX_API_CONTEXT_MESSAGES = 20;
 
 const GEMINI_MODELS = [
-  'gemini-flash-lite-latest',
-  'gemini-3.5-flash-lite',
-  'gemini-3.8-flash',
-  'gemini-flash-latest'
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-pro'
 ];
 
 /**
@@ -270,6 +270,12 @@ function buildGeminiContents(chatHistory, userQuery) {
 
 function formatGeminiApiError(status, errorObj) {
   const rawMessage = errorObj?.message || '';
+  const details = errorObj?.details || [];
+  const reason = details[0]?.reason || '';
+
+  if (reason === 'ACCESS_TOKEN_TYPE_UNSUPPORTED' || rawMessage.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')) {
+    return 'Google API Key Notice (401 ACCESS_TOKEN_TYPE_UNSUPPORTED): This key lacks permission for generativelanguage.googleapis.com. In Google Cloud Console > APIs & Services > Credentials, open this key and set API restrictions to "Don\'t restrict key" or select "Generative Language API" (not "Gemini API"), or create a key directly at aistudio.google.com/app/apikey.';
+  }
   if (status === 403 && rawMessage.toLowerCase().includes('billing')) {
     return 'Gemini API (403): Free tier is unavailable for this project — enable billing in Google AI Studio (aistudio.google.com/billing). Using ManageO Guard in the meantime.';
   }

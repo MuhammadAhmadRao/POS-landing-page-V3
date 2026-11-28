@@ -405,6 +405,22 @@ export default function FloatingChatWidget() {
           {activeTab === 'ai' && (
             <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
               
+              {/* API Status Notice when key error occurs */}
+              {lastApiError && !showSettings && (
+                <div className="mx-3 mt-2.5 p-2.5 bg-amber-50/90 border border-amber-200/90 rounded-xl text-[11px] text-amber-900 flex items-start justify-between gap-2 shadow-xs">
+                  <div className="flex items-start gap-1.5 flex-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <span className="leading-snug">{lastApiError}</span>
+                  </div>
+                  <button
+                    onClick={() => setShowSettings(true)}
+                    className="text-[10px] font-bold text-blue-600 underline shrink-0 hover:text-blue-700 pt-0.5"
+                  >
+                    API Key Details
+                  </button>
+                </div>
+              )}
+
               {/* Message List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
                 {messages.map((m) => (
